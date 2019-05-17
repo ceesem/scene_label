@@ -3,7 +3,8 @@ import vtk
 class SceneLabel():
     def __init__(self,
                  scene_list,
-                 key_label_dict,
+                 key_label_dict={},
+                 labels={},
                  quit_key='q',
                  forward_key='Right',
                  backward_key='Left',
@@ -11,7 +12,7 @@ class SceneLabel():
                  video_height=720):
         self._scene_list = scene_list
         self._key_label_dict = key_label_dict
-        self._labels = {}
+        self._labels = labels
         self.current_scene = 0
 
         self.do_quit = False
