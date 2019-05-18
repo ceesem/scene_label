@@ -15,7 +15,6 @@ class SceneLabel():
         self._labels = labels
         self.current_scene = 0
 
-        self.do_quit = False
         self.video_width = video_width
         self.video_height = video_height
         self.iren = None
@@ -31,7 +30,6 @@ class SceneLabel():
         return self._labels
 
     def Launch(self, start_scene=None, back_color=(1,1,1)):
-        self.do_quit = False
         if start_scene is not None:
             self.current_scene = start_scene
         self.vtk_callback(back_color=back_color)
@@ -66,7 +64,7 @@ class SceneLabel():
 
     def update_text(self):
         txt = 'Scene {}: Label ''{}'''.format(self.current_scene, self.labels.get(self.current_scene, 'None'))
-        if len(self.labels) == len(self._scene_list):
+        if len(self.labels) == len(self._scene_list) and len(self._key_label_dict) > 0:
             txt = txt + '  All scenes labeled!'
         self.text_actor = vtk.vtkTextActor()
         self.text_actor.SetInput(txt)
@@ -84,7 +82,6 @@ class SceneLabel():
                 self.scene_forward()
             elif key == self.quit_key:
                 self.close_window()
-                self.do_quit = True
             elif key == self.forward_key:
                 self.scene_forward()
             elif key == self.backward_key:
