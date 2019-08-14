@@ -1,17 +1,26 @@
 import vtk
 
-class SceneLabel():
+class SceneBrowser():
     def __init__(self,
-                 scene_list,
-                 key_label_dict={},
+                 scene_list=[],
+                 cameras={},
                  labels={},
+                 key_label_dict={},
+                 show_description=True,
                  quit_key='q',
                  forward_key='Right',
                  backward_key='Left',
                  video_width=1080,
                  video_height=720):
         self._scene_list = scene_list
-        self._key_label_dict = key_label_dict
+        self._key_label_dict = key_label_dict 
+
+        if type(cameras) is not dict and len(cameras) == len(cameras):
+            cameras = {ii:cam for ii, cam in enumerate(cameras)} 
+        self._cameras = cameras
+
+        if type(labels) is not dict and len(labels) == len(scene_list):
+            labels = {ii:lbl for ii, lbl in enumerate(labels)} 
         self._labels = labels
         self.current_scene = 0
 
@@ -21,6 +30,7 @@ class SceneLabel():
         self.ren = None
         self.renWin = None
         self.text_actor = None
+        self.show_description = show_description
         self.quit_key = quit_key
         self.forward_key = forward_key
         self.backward_key = backward_key
@@ -28,6 +38,10 @@ class SceneLabel():
     @property
     def labels(self):
         return self._labels
+
+    @property
+    def cameras(self):
+        return self._cameras
 
     def Launch(self, start_scene=None, back_color=(1,1,1)):
         if start_scene is not None:
@@ -59,7 +73,9 @@ class SceneLabel():
     def update_scene(self):
         for a in self._scene_list[self.current_scene]:
             self.ren.AddActor(a)
-        self.update_text()
+        if self.show_description:
+            self.update_text()
+        self.update_camera()
         self.renWin.Render()
 
     def update_text(self):
@@ -73,6 +89,14 @@ class SceneLabel():
         self.text_actor.GetTextProperty().SetColor((0,0,0)) 
         self.ren.AddActor(self.text_actor)
 
+    def update_camera(self):
+        cam = self.cameras.get(self.current_scene, None)
+        if cam is None:
+            self.ren.ResetCamera()
+        else:
+            self.ren.SetActiveCamera(cam)
+            self.ren.ResetCameraClippingRange()
+            cam.ViewingRaysModified()
 
     def vtk_callback(self, back_color=(1, 1, 1) ):
         def vtkKeyPress(obj, event):
@@ -98,8 +122,6 @@ class SceneLabel():
 
         self.iren = vtk.vtkRenderWindowInteractor()
         self.iren.SetRenderWindow(self.renWin)
-
-        self.ren.ResetCamera()
 
         trackCamera = vtk.vtkInteractorStyleTrackballCamera()
         self.iren.SetInteractorStyle(trackCamera)
